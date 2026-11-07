@@ -1,0 +1,30 @@
+title: Over-Permissioned EC2 Instance Role Accessing S3 or STS
+id: a1b2c3d4-0001-4e5f-8a9b-1c2d3e4f5a6b
+status: experimental
+description: >
+  lab-app-role is attached to an EC2 instance for SSM management only.
+  Any S3 or STS activity by this role indicates the instance credentials
+  were stolen and used for enumeration or data access.
+references:
+  - https://attack.mitre.org/techniques/T1530/
+  - https://attack.mitre.org/techniques/T1552/005/
+author: Hassan Bokhari
+date: 2026/11/06
+logsource:
+  product: aws
+  service: cloudtrail
+detection:
+  selection:
+    userIdentity.arn|contains: ':assumed-role/lab-app-role/'
+    eventSource:
+      - s3.amazonaws.com
+      - sts.amazonaws.com
+  condition: selection
+falsepositives:
+  - None expected; this role should only make SSM agent calls.
+level: high
+tags:
+  - attack.credential_access
+  - attack.collection
+  - attack.t1552.005
+  - attack.t1530

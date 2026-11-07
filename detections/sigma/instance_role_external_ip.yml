@@ -1,0 +1,29 @@
+title: EC2 Instance Credentials Used From Non-Instance IP
+id: a1b2c3d4-0002-4e5f-8a9b-1c2d3e4f5a6b
+status: experimental
+description: >
+  Detects AWS API calls made with an EC2 instance role from a source IP
+  that is not the instance itself, the signature of instance credential
+  exfiltration via the metadata service (IMDS).
+references:
+  - https://attack.mitre.org/techniques/T1552/005/
+author: Hassan Bokhari
+date: 2026/11/06
+logsource:
+  product: aws
+  service: cloudtrail
+detection:
+  selection:
+    userIdentity.arn|contains: ':assumed-role/lab-app-role/'
+  filter_instance_ip:
+    sourceIPAddress:
+      - '32.200.255.18'
+  condition: selection and not filter_instance_ip
+falsepositives:
+  - Legitimate SSM agent calls from the instance (allowlisted by IP).
+  - In production, derive the instance IP dynamically or use AWS GuardDuty's
+    InstanceCredentialExfiltration finding instead of a static allowlist.
+level: critical
+tags:
+  - attack.credential_access
+  - attack.t1552.005
